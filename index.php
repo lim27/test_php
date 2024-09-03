@@ -1,11 +1,10 @@
 <?php
     session_start();
-    require 'config.php';
-    require_once 'GetEmployees.php';
+    require_once 'vendor/autoload.php';
 
-    if (!isset($connect) || !$connect instanceof mysqli) {
-        die('Ошибка соединения с базой данных');
-    }
+use Controllers\Employees;
+use Models\Connect;
+    $connect = new Connect();
 ?>
 
 <!DOCTYPE html>
@@ -29,19 +28,27 @@
         </div>
 
         <div class="row" id="infoEmployees" style="display: none">
-            <?php
-                $sql = "SELECT * FROM employees";
-                $result = $connect->query($sql);
+            <table class="table table-striped table-hover">
+                <tbody>
+                <?php
+                $employees = Employees::showEmployee();
 
-                $employees = [];
-                if ($result->num_rows > 0) {
-                    while($row = $result->fetch_assoc()) {
-                        $employees[] = $row;
-                        $person = new GetEmployees($row['email'], $row['first_name'], $row['last_name'], $row['avatar']);
-                        $person->getInfo();
-                    }
+                foreach ($employees as $employee) {
+                    echo '
+                    <tr>
+                        <td style="width: 130px"> ' . ($employee->avatar ? '<img src="' . $employee->avatar . '" alt="' . $employee->first_name . '" style="float:left" />' : '') . '
+                        </td>
+                    <td>
+                        <b>Имя:</b> ' . $employee->first_name . '<br>
+                        <b>Фамилия:</b> ' . $employee->last_name . '<br>
+                        <b>Email:</b> ' . $employee->email . '<br>
+                    </td>
+                </tr>
+                    ';
                 }
-            ?>
+                ?>
+                </tbody>
+            </table>
         </div>
 
     </div>

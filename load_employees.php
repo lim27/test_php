@@ -1,45 +1,42 @@
 <?php
-require 'config.php';
+require 'vendor/autoload.php';
 
-function fetchData($url) {
-    $response = file_get_contents($url);
-    return json_decode($response, true);
+use GuzzleHttp\Client;
+use Controllers\Employees;
+use Models\Connect;
+
+$db = new Connect();
+
+$urls = [
+    'https://reqres.in/api/users?page=1',
+    'https://reqres.in/api/users?page=2'
+];
+
+foreach ($urls as $url) {
+    $data = fetch_data_from_api($url);
+    process_employee_data($data);
 }
 
-if (!isset($connect) || !$connect instanceof mysqli) {
-    die('Ошибка соединения с базой данных');
+function fetch_data_from_api($url) {
+    $client = new Client();
+    $response = $client->request('GET', $url);
+    $data = json_decode($response->getBody()->getContents(), true);
+    return $data;
 }
 
-$page1 = fetchData('https://reqres.in/api/users?page=1');
-$page2 = fetchData('https://reqres.in/api/users?page=2');
+function process_employee_data($data) {
+    foreach ($data['data'] as $user) {
+        $email = $user['email'];
+        $first_name = $user['first_name'];
+        $last_name = $user['last_name'];
+        $avatar = $user['avatar'];
 
-foreach ([$page1, $page2] as $page) {
-    foreach ($page['data'] as $person) {
-        $email = $person['email'];
-        $first_name = $person['first_name'];
-        $last_name = $person['last_name'];
-        $avatar = $person['avatar'];
+        echo "Email: $email\n";
+        echo "First Name: $first_name\n";
+        echo "Last Name: $last_name\n";
+        echo "Avatar: $avatar\n";
 
-        $query = "INSERT INTO employees (email, first_name, last_name, avatar) 
-            VALUES (?, ?, ?, ?) 
-            ON DUPLICATE KEY UPDATE 
-            email = VALUES(email), 
-            first_name = VALUES(first_name), 
-            last_name = VALUES(last_name), 
-            avatar = VALUES(avatar)";
-
-// Подготовка SQL запроса
-        $stmt = $connect->prepare($query);
-        if ($stmt === false) {
-            die('Ошибка подготовки запроса: ' . $connect->error);
-        }
-
-        $stmt->bind_param("ssss", $email, $first_name, $last_name, $avatar);
-        if (!$stmt->execute()) {
-            die('Ошибка выполнения запроса: ' . $stmt->error);
-        }
-
-        $stmt->close();
+        Employees::createEmployee($email, $first_name, $last_name, $avatar);
     }
 }
-$connect->close();
+http_redirect('employees_composer/');
