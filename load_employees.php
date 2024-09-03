@@ -39,4 +39,3 @@ function process_employee_data($data) {
         Employees::createEmployee($email, $first_name, $last_name, $avatar);
     }
 }
-http_redirect('employees_composer/');
