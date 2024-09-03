@@ -31,11 +31,6 @@ function process_employee_data($data) {
         $last_name = $user['last_name'];
         $avatar = $user['avatar'];
 
-        echo "Email: $email\n";
-        echo "First Name: $first_name\n";
-        echo "Last Name: $last_name\n";
-        echo "Avatar: $avatar\n";
-
         Employees::createEmployee($email, $first_name, $last_name, $avatar);
     }
 }
