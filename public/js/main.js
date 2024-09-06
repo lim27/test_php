@@ -4,7 +4,7 @@ document.getElementById("loadEmployees").addEventListener("click", function () {
         alert('Успешно!');
         setTimeout(function() {
             location.reload();
-        }, 1000);
+        }, 100);
     }
 });
 
